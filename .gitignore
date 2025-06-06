@@ -140,6 +140,7 @@ datasets/
 models/
 !models/.gitkeep
 !models/model_card.json
+!models/*.json
 
 # Feature files - can be regenerated
 features/

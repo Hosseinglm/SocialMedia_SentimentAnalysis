@@ -237,6 +237,34 @@ clean_data = preprocessor.clean_dataset(data)
 # ... continue with pipeline
 ```
 
+## Data and Model Files
+
+**Note**: To keep the repository size manageable, datasets, trained models, and generated features are not included in Git. These files will be generated when you run the pipeline.
+
+### Regenerating Data and Models
+
+1. **Place your training data** in the `datasets/` directory:
+   - `twitter_training.csv` - Training dataset
+   - `twitter_validation.csv` - Validation dataset
+
+2. **Run the pipeline** to generate all files:
+   ```bash
+   python run_pipeline.py
+   ```
+
+3. **Generated files** will be created in:
+   - `datasets/` - Cleaned and processed data
+   - `features/` - Feature matrices (BoW, TF-IDF)
+   - `models/` - Trained model files and metadata
+   - `reports/` - Visualizations and evaluation plots
+
+### File Size Note
+
+Trained models can be very large (100MB+). If you need to share models:
+- Use Git LFS for large files
+- Or upload models to cloud storage
+- Or retrain models from the pipeline
+
 ## License
 
 This project is provided for educational and research purposes. Please ensure compliance with data usage policies for any Twitter data used.
