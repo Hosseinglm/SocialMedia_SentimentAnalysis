@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-sentiment-intelligence-platform-dev-key-2024'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'sentiment.hprojects.dev']
 
 # Application definition
 INSTALLED_APPS = [
