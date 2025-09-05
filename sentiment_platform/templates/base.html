@@ -63,6 +63,49 @@
             font-weight: bold;
             margin-right: 0.5rem;
         }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            transition: all 0.2s ease;
+        }
+
+        .border-left-primary { border-left: 4px solid #007bff !important; }
+        .border-left-success { border-left: 4px solid #28a745 !important; }
+        .border-left-warning { border-left: 4px solid #ffc107 !important; }
+        .border-left-danger { border-left: 4px solid #dc3545 !important; }
+        .border-left-info { border-left: 4px solid #17a2b8 !important; }
+
+        .bg-success-subtle { background-color: rgba(40, 167, 69, 0.1) !important; }
+        .bg-danger-subtle { background-color: rgba(220, 53, 69, 0.1) !important; }
+        .bg-warning-subtle { background-color: rgba(255, 193, 7, 0.1) !important; }
+        .bg-info-subtle { background-color: rgba(23, 162, 184, 0.1) !important; }
+
+        .recommendation-card {
+            transition: all 0.2s ease;
+        }
+
+        .recommendation-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .opacity-75 { opacity: 0.75; }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -114,10 +157,24 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'api_explorer' %}active{% endif %}" 
+                            <a class="nav-link {% if request.resolver_match.url_name == 'api_explorer' %}active{% endif %}"
                                href="{% url 'dashboard:api_explorer' %}">
                                 <i class="fas fa-code me-2"></i>
                                 API Explorer
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'algorithms' %}active{% endif %}"
+                               href="{% url 'dashboard:algorithms' %}">
+                                <i class="fas fa-brain me-2"></i>
+                                Algorithms
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'recommendations' %}active{% endif %}"
+                               href="{% url 'dashboard:recommendations' %}">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                Recommendations
                             </a>
                         </li>
                     </ul>

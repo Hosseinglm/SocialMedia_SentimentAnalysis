@@ -1,0 +1,423 @@
+{% extends 'base.html' %}
+
+{% block title %}Brand Recommendations - Augment Sentiment Intelligence{% endblock %}
+{% block page_title %}Intelligent Brand Recommendations{% endblock %}
+
+{% block content %}
+<!-- Overview Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Total Recommendations</div>
+                        <div class="h5 mb-0 font-weight-bold" id="totalRecommendations">{{ brand_recommendations|length }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-lightbulb fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Critical Alerts</div>
+                        <div class="h5 mb-0 font-weight-bold text-danger" id="criticalAlerts">
+                            {% for rec in brand_recommendations %}
+                                {% for recommendation in rec.recommendations %}
+                                    {% if recommendation.type == 'critical' %}1{% endif %}
+                                {% endfor %}
+                            {% empty %}0{% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Opportunities</div>
+                        <div class="h5 mb-0 font-weight-bold text-success" id="opportunities">
+                            {% for rec in brand_recommendations %}
+                                {% for recommendation in rec.recommendations %}
+                                    {% if recommendation.type == 'success' %}1{% endif %}
+                                {% endfor %}
+                            {% empty %}0{% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Brands Analyzed</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ brand_recommendations|length }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-building fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-filter me-2"></i>
+                    Recommendation Filters
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="categoryFilter" class="form-label">Category</label>
+                        <select class="form-select" id="categoryFilter" onchange="filterRecommendations()">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="priorityFilter" class="form-label">Priority</label>
+                        <select class="form-select" id="priorityFilter" onchange="filterRecommendations()">
+                            <option value="">All Priorities</option>
+                            <option value="critical">Critical</option>
+                            <option value="warning">Warning</option>
+                            <option value="success">Opportunity</option>
+                            <option value="info">Information</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="sentimentFilter" class="form-label">Sentiment Score</label>
+                        <select class="form-select" id="sentimentFilter" onchange="filterRecommendations()">
+                            <option value="">All Scores</option>
+                            <option value="positive">Positive (>20)</option>
+                            <option value="neutral">Neutral (-20 to 20)</option>
+                            <option value="negative">Negative (<-20)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <div>
+                            <button class="btn btn-primary" onclick="refreshRecommendations()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="exportRecommendations()">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recommendations List -->
+<div class="row" id="recommendationsContainer">
+    {% for brand_rec in brand_recommendations %}
+    <div class="col-12 mb-4 recommendation-item" 
+         data-category="{{ brand_rec.brand.category }}" 
+         data-sentiment="{{ brand_rec.sentiment_score }}">
+        <div class="card">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h6 class="m-0 font-weight-bold">
+                            <span class="brand-logo me-2">{{ brand_rec.brand.name|first|upper }}</span>
+                            {{ brand_rec.brand.display_name|default:brand_rec.brand.name }}
+                            <span class="badge bg-secondary ms-2">{{ brand_rec.brand.category }}</span>
+                        </h6>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="sentiment-score">
+                            {% if brand_rec.sentiment_score > 20 %}
+                                <span class="badge bg-success">{{ brand_rec.sentiment_score }}% Positive</span>
+                            {% elif brand_rec.sentiment_score < -20 %}
+                                <span class="badge bg-danger">{{ brand_rec.sentiment_score }}% Negative</span>
+                            {% else %}
+                                <span class="badge bg-warning">{{ brand_rec.sentiment_score }}% Neutral</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Sentiment Overview -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <small class="text-muted">Positive Sentiment</small>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: {{ brand_rec.positive_ratio }}%"></div>
+                        </div>
+                        <small>{{ brand_rec.positive_ratio }}%</small>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">Negative Sentiment</small>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-danger" style="width: {{ brand_rec.negative_ratio }}%"></div>
+                        </div>
+                        <small>{{ brand_rec.negative_ratio }}%</small>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">Total Mentions</small>
+                        <div class="h6 mb-0">{{ brand_rec.total_mentions }}</div>
+                    </div>
+                </div>
+                
+                <!-- Recommendations -->
+                <div class="recommendations">
+                    {% for recommendation in brand_rec.recommendations %}
+                    <div class="recommendation-card mb-3 p-3 border rounded 
+                                {% if recommendation.type == 'critical' %}border-danger bg-danger-subtle
+                                {% elif recommendation.type == 'warning' %}border-warning bg-warning-subtle
+                                {% elif recommendation.type == 'success' %}border-success bg-success-subtle
+                                {% else %}border-info bg-info-subtle{% endif %}"
+                         data-type="{{ recommendation.type }}">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6 class="mb-1">
+                                    {% if recommendation.type == 'critical' %}
+                                        <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                    {% elif recommendation.type == 'warning' %}
+                                        <i class="fas fa-exclamation-circle text-warning me-2"></i>
+                                    {% elif recommendation.type == 'success' %}
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                    {% else %}
+                                        <i class="fas fa-info-circle text-info me-2"></i>
+                                    {% endif %}
+                                    {{ recommendation.title }}
+                                </h6>
+                                <p class="mb-2 small">{{ recommendation.description }}</p>
+                                
+                                <div class="actions">
+                                    <h6 class="small mb-1">Recommended Actions:</h6>
+                                    <ul class="small mb-0">
+                                        {% for action in recommendation.actions %}
+                                        <li>{{ action }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="recommendation-priority">
+                                    {% if recommendation.type == 'critical' %}
+                                        <span class="badge bg-danger">High Priority</span>
+                                    {% elif recommendation.type == 'warning' %}
+                                        <span class="badge bg-warning">Medium Priority</span>
+                                    {% elif recommendation.type == 'success' %}
+                                        <span class="badge bg-success">Opportunity</span>
+                                    {% else %}
+                                        <span class="badge bg-info">Low Priority</span>
+                                    {% endif %}
+                                </div>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="implementRecommendation('{{ brand_rec.brand.id }}', '{{ recommendation.type }}')">
+                                        <i class="fas fa-play"></i> Implement
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-lightbulb fa-3x text-muted mb-3"></i>
+            <h5>No Recommendations Available</h5>
+            <p class="text-muted">Generate recommendations by analyzing brand sentiment data.</p>
+            <button class="btn btn-primary" onclick="refreshRecommendations()">
+                <i class="fas fa-sync-alt"></i> Generate Recommendations
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Quick Actions Panel -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-bolt me-2"></i>
+                    Quick Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-danger w-100" onclick="showCriticalAlerts()">
+                            <i class="fas fa-exclamation-triangle"></i><br>
+                            <small>Critical Alerts</small>
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-success w-100" onclick="showOpportunities()">
+                            <i class="fas fa-chart-line"></i><br>
+                            <small>Growth Opportunities</small>
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-info w-100" onclick="generateReport()">
+                            <i class="fas fa-file-alt"></i><br>
+                            <small>Generate Report</small>
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-secondary w-100" onclick="scheduleReview()">
+                            <i class="fas fa-calendar"></i><br>
+                            <small>Schedule Review</small>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterRecommendations() {
+    const categoryFilter = document.getElementById('categoryFilter').value;
+    const priorityFilter = document.getElementById('priorityFilter').value;
+    const sentimentFilter = document.getElementById('sentimentFilter').value;
+    
+    const items = document.querySelectorAll('.recommendation-item');
+    
+    items.forEach(item => {
+        let show = true;
+        
+        // Category filter
+        if (categoryFilter && item.dataset.category !== categoryFilter) {
+            show = false;
+        }
+        
+        // Sentiment filter
+        if (sentimentFilter) {
+            const sentiment = parseFloat(item.dataset.sentiment);
+            if (sentimentFilter === 'positive' && sentiment <= 20) show = false;
+            if (sentimentFilter === 'neutral' && (sentiment > 20 || sentiment < -20)) show = false;
+            if (sentimentFilter === 'negative' && sentiment >= -20) show = false;
+        }
+        
+        // Priority filter
+        if (priorityFilter) {
+            const hasType = item.querySelector(`[data-type="${priorityFilter}"]`);
+            if (!hasType) show = false;
+        }
+        
+        item.style.display = show ? 'block' : 'none';
+    });
+    
+    updateCounts();
+}
+
+function updateCounts() {
+    const visibleItems = document.querySelectorAll('.recommendation-item[style="display: block"], .recommendation-item:not([style*="display: none"])');
+    document.getElementById('totalRecommendations').textContent = visibleItems.length;
+}
+
+function refreshRecommendations() {
+    // Show loading state
+    const container = document.getElementById('recommendationsContainer');
+    container.innerHTML = '<div class="col-12 text-center py-5"><i class="fas fa-spinner fa-spin fa-2x"></i><br><small>Refreshing recommendations...</small></div>';
+    
+    // Simulate refresh (in production, this would make an AJAX call)
+    setTimeout(() => {
+        location.reload();
+    }, 2000);
+}
+
+function exportRecommendations() {
+    // Generate CSV export
+    const data = [];
+    const items = document.querySelectorAll('.recommendation-item:not([style*="display: none"])');
+    
+    items.forEach(item => {
+        const brandName = item.querySelector('.card-header h6').textContent.trim();
+        const category = item.dataset.category;
+        const sentiment = item.dataset.sentiment;
+        
+        const recommendations = item.querySelectorAll('.recommendation-card');
+        recommendations.forEach(rec => {
+            const title = rec.querySelector('h6').textContent.trim();
+            const type = rec.dataset.type;
+            data.push([brandName, category, sentiment, type, title]);
+        });
+    });
+    
+    // Create CSV content
+    const csvContent = "data:text/csv;charset=utf-8," 
+        + "Brand,Category,Sentiment Score,Type,Recommendation\n"
+        + data.map(row => row.join(",")).join("\n");
+    
+    // Download file
+    const link = document.createElement("a");
+    link.setAttribute("href", encodeURI(csvContent));
+    link.setAttribute("download", "brand_recommendations.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function implementRecommendation(brandId, type) {
+    alert(`Implementation plan for ${type} recommendation will be created for brand ID: ${brandId}`);
+}
+
+function showCriticalAlerts() {
+    document.getElementById('priorityFilter').value = 'critical';
+    filterRecommendations();
+}
+
+function showOpportunities() {
+    document.getElementById('priorityFilter').value = 'success';
+    filterRecommendations();
+}
+
+function generateReport() {
+    alert('Comprehensive recommendation report will be generated and emailed to stakeholders.');
+}
+
+function scheduleReview() {
+    alert('Recommendation review meeting will be scheduled with the brand management team.');
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    updateCounts();
+});
+</script>
+{% endblock %}

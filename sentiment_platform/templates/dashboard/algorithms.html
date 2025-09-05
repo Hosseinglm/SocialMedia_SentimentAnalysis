@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+
+{% block title %}Algorithms & Methodologies - Augment Sentiment Intelligence{% endblock %}
+{% block page_title %}Sentiment Analysis Algorithms & Methodologies{% endblock %}
+
+{% block content %}
+<!-- Overview Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold">
+                    <i class="fas fa-brain me-2"></i>
+                    Platform Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="lead">
+                    The Augment Sentiment Intelligence Platform employs state-of-the-art natural language processing 
+                    and machine learning techniques to analyze social media sentiment at scale.
+                </p>
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <div class="h2 text-primary">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h6>Data Processing</h6>
+                        <small class="text-muted">Advanced text preprocessing and cleaning</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="h2 text-success">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <h6>Feature Engineering</h6>
+                        <small class="text-muted">TF-IDF, N-grams, and semantic features</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="h2 text-warning">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h6>ML Models</h6>
+                        <small class="text-muted">Ensemble of classification algorithms</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="h2 text-info">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h6>Real-time Analysis</h6>
+                        <small class="text-muted">Continuous sentiment monitoring</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data Processing Pipeline -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold">
+                    <i class="fas fa-stream me-2"></i>
+                    Data Processing Pipeline
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-broom me-2"></i>Text Preprocessing</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i><strong>Text Normalization:</strong> Convert to lowercase, handle Unicode</li>
+                            <li><i class="fas fa-check text-success me-2"></i><strong>URL & Mention Removal:</strong> Clean social media artifacts</li>
+                            <li><i class="fas fa-check text-success me-2"></i><strong>Special Character Handling:</strong> Preserve emoticons, remove noise</li>
+                            <li><i class="fas fa-check text-success me-2"></i><strong>Tokenization:</strong> Advanced word and sentence segmentation</li>
+                            <li><i class="fas fa-check text-success me-2"></i><strong>Stop Word Filtering:</strong> Context-aware stop word removal</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-tools me-2"></i>Advanced Processing</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i><strong>Lemmatization:</strong> Reduce words to base forms</li>
+                            <li><i class="fas fa-check text-success me-2"></i><strong>POS Tagging:</strong> Part-of-speech identification</li>
+                            <li><i class="fas fa-check text-success me-2"></i><strong>Named Entity Recognition:</strong> Identify brands and entities</li>
+                            <li><i class="fas fa-check text-success me-2"></i><strong>Sentiment Lexicon Matching:</strong> Dictionary-based features</li>
+                            <li><i class="fas fa-check text-success me-2"></i><strong>Negation Handling:</strong> Context-aware sentiment flipping</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feature Engineering -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold">
+                    <i class="fas fa-wrench me-2"></i>
+                    Feature Engineering
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Textual Features</h6>
+                <ul class="small">
+                    <li><strong>TF-IDF Vectors:</strong> Term frequency-inverse document frequency</li>
+                    <li><strong>N-gram Features:</strong> Unigrams, bigrams, and trigrams</li>
+                    <li><strong>Character N-grams:</strong> Sub-word level patterns</li>
+                    <li><strong>Word Embeddings:</strong> Pre-trained GloVe and Word2Vec</li>
+                </ul>
+                
+                <h6 class="mt-3">Linguistic Features</h6>
+                <ul class="small">
+                    <li><strong>Sentiment Scores:</strong> VADER and TextBlob scores</li>
+                    <li><strong>Emotion Indicators:</strong> Joy, anger, fear, surprise</li>
+                    <li><strong>Syntactic Features:</strong> POS tag distributions</li>
+                    <li><strong>Readability Metrics:</strong> Flesch-Kincaid scores</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold">
+                    <i class="fas fa-hashtag me-2"></i>
+                    Social Media Features
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Engagement Metrics</h6>
+                <ul class="small">
+                    <li><strong>Hashtag Count:</strong> Number of hashtags used</li>
+                    <li><strong>Mention Count:</strong> User mentions and replies</li>
+                    <li><strong>URL Presence:</strong> External link indicators</li>
+                    <li><strong>Text Length:</strong> Character and word counts</li>
+                </ul>
+                
+                <h6 class="mt-3">Temporal Features</h6>
+                <ul class="small">
+                    <li><strong>Time of Day:</strong> Hour-based patterns</li>
+                    <li><strong>Day of Week:</strong> Weekly sentiment cycles</li>
+                    <li><strong>Seasonal Trends:</strong> Monthly and quarterly patterns</li>
+                    <li><strong>Event Correlation:</strong> News and event alignment</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Machine Learning Models -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold">
+                    <i class="fas fa-robot me-2"></i>
+                    Machine Learning Architecture
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card border-left-primary">
+                            <div class="card-body">
+                                <h6 class="text-primary">Traditional ML Models</h6>
+                                <ul class="small">
+                                    <li><strong>Support Vector Machines:</strong> Linear and RBF kernels</li>
+                                    <li><strong>Random Forest:</strong> Ensemble decision trees</li>
+                                    <li><strong>Logistic Regression:</strong> L1/L2 regularization</li>
+                                    <li><strong>Naive Bayes:</strong> Multinomial and Gaussian variants</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <span class="badge bg-primary">Accuracy: 85-88%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card border-left-success">
+                            <div class="card-body">
+                                <h6 class="text-success">Deep Learning Models</h6>
+                                <ul class="small">
+                                    <li><strong>LSTM Networks:</strong> Sequential pattern learning</li>
+                                    <li><strong>CNN Models:</strong> Local feature extraction</li>
+                                    <li><strong>Transformer Models:</strong> BERT-based classification</li>
+                                    <li><strong>Attention Mechanisms:</strong> Context-aware processing</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <span class="badge bg-success">Accuracy: 90-93%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card border-left-warning">
+                            <div class="card-body">
+                                <h6 class="text-warning">Ensemble Methods</h6>
+                                <ul class="small">
+                                    <li><strong>Voting Classifier:</strong> Hard and soft voting</li>
+                                    <li><strong>Stacking:</strong> Meta-learner optimization</li>
+                                    <li><strong>Boosting:</strong> AdaBoost and Gradient Boosting</li>
+                                    <li><strong>Bagging:</strong> Bootstrap aggregation</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <span class="badge bg-warning">Accuracy: 94-96%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Evaluation Metrics -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Model Evaluation
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Performance Metrics</h6>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h4 text-success">96.2%</div>
+                        <small>Overall Accuracy</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-primary">94.8%</div>
+                        <small>F1-Score</small>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <h6>Class-wise Performance</h6>
+                <div class="progress mb-2">
+                    <div class="progress-bar bg-success" style="width: 97%">Positive: 97%</div>
+                </div>
+                <div class="progress mb-2">
+                    <div class="progress-bar bg-danger" style="width: 94%">Negative: 94%</div>
+                </div>
+                <div class="progress mb-2">
+                    <div class="progress-bar bg-secondary" style="width: 92%">Neutral: 92%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold">
+                    <i class="fas fa-database me-2"></i>
+                    Data Sources & Quality
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Training Data</h6>
+                <ul class="small">
+                    <li><strong>Volume:</strong> 1.2M+ labeled tweets</li>
+                    <li><strong>Sources:</strong> Twitter, Reddit, Facebook</li>
+                    <li><strong>Languages:</strong> English (primary), multilingual support</li>
+                    <li><strong>Domains:</strong> Technology, Gaming, Automotive, F&B</li>
+                </ul>
+                
+                <h6 class="mt-3">Quality Assurance</h6>
+                <ul class="small">
+                    <li><strong>Human Annotation:</strong> Expert-validated labels</li>
+                    <li><strong>Inter-annotator Agreement:</strong> κ = 0.82</li>
+                    <li><strong>Data Validation:</strong> Automated quality checks</li>
+                    <li><strong>Bias Detection:</strong> Fairness and representation analysis</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Technical Architecture -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="m-0 font-weight-bold">
+                    <i class="fas fa-sitemap me-2"></i>
+                    Technical Architecture
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h3 text-primary">
+                                <i class="fas fa-cloud-download-alt"></i>
+                            </div>
+                            <h6>Data Ingestion</h6>
+                            <small class="text-muted">
+                                Real-time streaming APIs<br>
+                                Batch processing pipelines<br>
+                                Data validation & cleaning
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h3 text-success">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <h6>Processing Engine</h6>
+                            <small class="text-muted">
+                                Distributed computing<br>
+                                GPU-accelerated training<br>
+                                Scalable inference
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h3 text-warning">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <h6>Model Serving</h6>
+                            <small class="text-muted">
+                                REST API endpoints<br>
+                                Load balancing<br>
+                                Auto-scaling
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h3 text-info">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h6>Analytics Layer</h6>
+                            <small class="text-muted">
+                                Real-time dashboards<br>
+                                Historical analysis<br>
+                                Predictive insights
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i>Continuous Improvement</h6>
+                    <p class="mb-0">
+                        Our models are continuously updated with new data and retrained using active learning techniques. 
+                        Performance monitoring and A/B testing ensure optimal accuracy and reliability in production environments.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
