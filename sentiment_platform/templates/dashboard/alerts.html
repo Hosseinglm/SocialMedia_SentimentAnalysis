@@ -1,0 +1,454 @@
+{% extends 'base.html' %}
+
+{% block title %}Alerts - Augment Sentiment Intelligence{% endblock %}
+{% block page_title %}Sentiment Monitoring & Alerts{% endblock %}
+
+{% block content %}
+<!-- Alert Overview Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Active Alerts</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ alert_stats.open|default:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Critical Alerts</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ alert_stats.critical|default:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-fire fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Total Alerts</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ alert_stats.total|default:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-bell fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">System Status</div>
+                        <div class="h6 mb-0 font-weight-bold">
+                            <i class="fas fa-check-circle text-success"></i> Healthy
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-heartbeat fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Controls -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-cog me-2"></i>
+                    Alert Management
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <button class="btn btn-primary" onclick="createAlert()">
+                            <i class="fas fa-plus"></i> Create Alert Rule
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-success" onclick="acknowledgeAll()">
+                            <i class="fas fa-check"></i> Acknowledge All
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-warning" onclick="testAlerts()">
+                            <i class="fas fa-vial"></i> Test Alerts
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-secondary" onclick="exportAlerts()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Current Alerts -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-list me-2"></i>
+                    Recent Alerts
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if alerts %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Severity</th>
+                                <th>Title</th>
+                                <th>Brand</th>
+                                <th>Status</th>
+                                <th>Triggered</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alert in alerts %}
+                            <tr>
+                                <td>
+                                    {% if alert.severity == 'critical' %}
+                                        <span class="badge bg-danger">Critical</span>
+                                    {% elif alert.severity == 'high' %}
+                                        <span class="badge bg-warning">High</span>
+                                    {% elif alert.severity == 'medium' %}
+                                        <span class="badge bg-info">Medium</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Low</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ alert.title }}</td>
+                                <td>{{ alert.rule.brand.name }}</td>
+                                <td>
+                                    {% if alert.status == 'open' %}
+                                        <span class="badge bg-danger">Open</span>
+                                    {% elif alert.status == 'acknowledged' %}
+                                        <span class="badge bg-warning">Acknowledged</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Resolved</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ alert.triggered_at|date:"M d, H:i" }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" onclick="viewAlert({{ alert.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        {% if alert.status == 'open' %}
+                                        <button class="btn btn-outline-success" onclick="acknowledgeAlert({{ alert.id }})">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        {% endif %}
+                                        <button class="btn btn-outline-secondary" onclick="resolveAlert({{ alert.id }})">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5>No Active Alerts</h5>
+                    <p class="text-muted">Your sentiment monitoring is running smoothly. All systems are operating within normal parameters.</p>
+                    <button class="btn btn-primary" onclick="createAlert()">
+                        <i class="fas fa-plus"></i> Create Your First Alert Rule
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alert Rules -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-rules me-2"></i>
+                    Alert Rules Configuration
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card border-left-primary">
+                            <div class="card-body">
+                                <h6 class="text-primary">Sentiment Threshold</h6>
+                                <p class="small text-muted">Trigger when negative sentiment exceeds threshold</p>
+                                <div class="form-group">
+                                    <label>Threshold (%)</label>
+                                    <input type="range" class="form-range" min="10" max="90" value="40" id="sentimentThreshold">
+                                    <small class="text-muted">Current: <span id="sentimentValue">40%</span></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card border-left-warning">
+                            <div class="card-body">
+                                <h6 class="text-warning">Volume Spike</h6>
+                                <p class="small text-muted">Alert on unusual volume increases</p>
+                                <div class="form-group">
+                                    <label>Spike Multiplier</label>
+                                    <input type="range" class="form-range" min="1.5" max="5" step="0.5" value="2" id="volumeSpike">
+                                    <small class="text-muted">Current: <span id="volumeValue">2x</span> normal</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card border-left-danger">
+                            <div class="card-body">
+                                <h6 class="text-danger">Negative Trend</h6>
+                                <p class="small text-muted">Detect sustained negative trends</p>
+                                <div class="form-group">
+                                    <label>Duration (hours)</label>
+                                    <input type="range" class="form-range" min="6" max="72" step="6" value="24" id="trendDuration">
+                                    <small class="text-muted">Current: <span id="trendValue">24</span> hours</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <button class="btn btn-success" onclick="saveAlertRules()">
+                        <i class="fas fa-save"></i> Save Alert Rules
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Real-time Monitoring -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Real-time Sentiment Monitor
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="realtimeChart" width="400" height="200"></canvas>
+                <div class="text-center mt-2">
+                    <small class="text-muted">Updates every 30 seconds</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-activity me-2"></i>
+                    System Health
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h4 text-success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <small>Data Pipeline</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h4 text-success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <small>Alert System</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="small">
+                    <div class="d-flex justify-content-between">
+                        <span>Last Data Update:</span>
+                        <span class="text-muted" id="lastUpdate">{{ "now"|date:"H:i:s" }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Alert Engine:</span>
+                        <span class="text-success">Active</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Monitoring:</span>
+                        <span class="text-success">32 Brands</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Real-time monitoring chart
+const realtimeCtx = document.getElementById('realtimeChart').getContext('2d');
+const realtimeChart = new Chart(realtimeCtx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'Sentiment Score',
+            data: [],
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Simulate real-time data
+function updateRealtimeChart() {
+    const now = new Date();
+    const timeLabel = now.toLocaleTimeString();
+    const sentimentScore = Math.random() * 40 + 50; // Random score between 50-90
+    
+    realtimeChart.data.labels.push(timeLabel);
+    realtimeChart.data.datasets[0].data.push(sentimentScore);
+    
+    // Keep only last 10 data points
+    if (realtimeChart.data.labels.length > 10) {
+        realtimeChart.data.labels.shift();
+        realtimeChart.data.datasets[0].data.shift();
+    }
+    
+    realtimeChart.update('none');
+    
+    // Update last update time
+    document.getElementById('lastUpdate').textContent = timeLabel;
+}
+
+// Update chart every 30 seconds
+setInterval(updateRealtimeChart, 30000);
+
+// Initialize with some data
+for (let i = 0; i < 5; i++) {
+    updateRealtimeChart();
+}
+
+// Range slider updates
+document.getElementById('sentimentThreshold').addEventListener('input', function() {
+    document.getElementById('sentimentValue').textContent = this.value + '%';
+});
+
+document.getElementById('volumeSpike').addEventListener('input', function() {
+    document.getElementById('volumeValue').textContent = this.value + 'x';
+});
+
+document.getElementById('trendDuration').addEventListener('input', function() {
+    document.getElementById('trendValue').textContent = this.value;
+});
+
+// Alert management functions
+function createAlert() {
+    alert('Create Alert Rule functionality would open a modal form to configure new alert rules');
+}
+
+function acknowledgeAll() {
+    if (confirm('Acknowledge all open alerts?')) {
+        alert('All open alerts have been acknowledged');
+    }
+}
+
+function testAlerts() {
+    alert('Test alert sent! Check your notification channels.');
+}
+
+function exportAlerts() {
+    alert('Alert data exported to CSV file');
+}
+
+function viewAlert(alertId) {
+    alert(`Viewing details for alert ID: ${alertId}`);
+}
+
+function acknowledgeAlert(alertId) {
+    if (confirm('Acknowledge this alert?')) {
+        alert(`Alert ${alertId} acknowledged`);
+        location.reload();
+    }
+}
+
+function resolveAlert(alertId) {
+    if (confirm('Mark this alert as resolved?')) {
+        alert(`Alert ${alertId} resolved`);
+        location.reload();
+    }
+}
+
+function saveAlertRules() {
+    const sentimentThreshold = document.getElementById('sentimentThreshold').value;
+    const volumeSpike = document.getElementById('volumeSpike').value;
+    const trendDuration = document.getElementById('trendDuration').value;
+    
+    alert(`Alert rules saved:\n- Sentiment Threshold: ${sentimentThreshold}%\n- Volume Spike: ${volumeSpike}x\n- Trend Duration: ${trendDuration} hours`);
+}
+</script>
+{% endblock %}

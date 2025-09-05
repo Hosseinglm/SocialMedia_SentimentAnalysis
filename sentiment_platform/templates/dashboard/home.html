@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Augment Sentiment Intelligence{% endblock %}
+{% block page_title %}Sentiment Intelligence Dashboard{% endblock %}
+
+{% block content %}
+<!-- Key Metrics Row -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Total Posts</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ total_tweets|floatformat:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-comments fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Brands Monitored</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ total_brands }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-building fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Recent Activity (7d)</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ recent_tweets_count|floatformat:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Active Alerts</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ active_alerts }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <!-- Sentiment Distribution -->
+    <div class="col-xl-6 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Sentiment Distribution
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="sentimentChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Brands -->
+    <div class="col-xl-6 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-trophy me-2"></i>
+                    Top Brands by Mentions
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="brandsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-clock me-2"></i>
+                    Quick Insights
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="text-primary">Sentiment Health</h6>
+                        <div id="sentiment-health">
+                            {% for sentiment in sentiment_distribution %}
+                                {% if sentiment.sentiment_label == 'Positive' %}
+                                    <div class="sentiment-positive">
+                                        <i class="fas fa-thumbs-up"></i>
+                                        Positive: {{ sentiment.count }} posts
+                                    </div>
+                                {% elif sentiment.sentiment_label == 'Negative' %}
+                                    <div class="sentiment-negative">
+                                        <i class="fas fa-thumbs-down"></i>
+                                        Negative: {{ sentiment.count }} posts
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <h6 class="text-primary">Top Performing Brand</h6>
+                        {% if top_brands %}
+                            <div>
+                                <span class="brand-logo">{{ top_brands.0.brand__name|first|upper }}</span>
+                                <strong>{{ top_brands.0.brand__name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ top_brands.0.count }} mentions</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <h6 class="text-primary">System Status</h6>
+                        <div>
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle"></i>
+                                All Systems Operational
+                            </span>
+                            <br>
+                            <small class="text-muted">Last updated: <span id="last-updated">{{ "now"|date:"H:i" }}</span></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Sentiment Distribution Chart
+const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+const sentimentData = {{ sentiment_distribution|safe }};
+
+const sentimentLabels = sentimentData.map(item => item.sentiment_label);
+const sentimentCounts = sentimentData.map(item => item.count);
+
+new Chart(sentimentCtx, {
+    type: 'doughnut',
+    data: {
+        labels: sentimentLabels,
+        datasets: [{
+            data: sentimentCounts,
+            backgroundColor: [
+                '#28a745', // Positive - Green
+                '#dc3545', // Negative - Red  
+                '#6c757d', // Neutral - Gray
+                '#ffc107'  // Irrelevant - Yellow
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Top Brands Chart
+const brandsCtx = document.getElementById('brandsChart').getContext('2d');
+const brandsData = {{ top_brands|safe }};
+
+const brandLabels = brandsData.slice(0, 8).map(item => item.brand__name);
+const brandCounts = brandsData.slice(0, 8).map(item => item.count);
+
+new Chart(brandsCtx, {
+    type: 'bar',
+    data: {
+        labels: brandLabels,
+        datasets: [{
+            label: 'Mentions',
+            data: brandCounts,
+            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+            borderColor: 'rgba(102, 126, 234, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Update timestamp
+function updateTimestamp() {
+    const now = new Date();
+    document.getElementById('last-updated').textContent = now.toLocaleTimeString();
+}
+
+// Update every minute
+setInterval(updateTimestamp, 60000);
+</script>
+{% endblock %}

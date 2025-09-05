@@ -1,0 +1,404 @@
+{% extends 'base.html' %}
+
+{% block title %}API Explorer - Augment Sentiment Intelligence{% endblock %}
+{% block page_title %}API Explorer{% endblock %}
+
+{% block content %}
+<!-- API Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-code me-2"></i>
+                    Augment Sentiment Intelligence API
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    Explore and test the Sentiment Intelligence API endpoints. All endpoints return JSON responses 
+                    and support various query parameters for filtering and customization.
+                </p>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h4 text-primary">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <small>REST API</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h4 text-success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <small>Real-time Data</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h4 text-info">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <small>Analytics Ready</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="h4 text-warning">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <small>No Auth Required</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Endpoints -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-list me-2"></i>
+                    Available Endpoints
+                </h6>
+            </div>
+            <div class="card-body">
+                {% for endpoint in api_endpoints %}
+                <div class="card mb-3 border-left-primary">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="mb-1">
+                                    <span class="badge bg-primary me-2">{{ endpoint.method }}</span>
+                                    {{ endpoint.name }}
+                                </h6>
+                                <p class="text-muted mb-2">{{ endpoint.description }}</p>
+                                <code class="text-primary">{{ endpoint.url }}</code>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <button class="btn btn-outline-primary btn-sm" onclick="testEndpoint('{{ endpoint.url }}', '{{ endpoint.method }}')">
+                                    <i class="fas fa-play"></i> Test
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="copyEndpoint('{{ endpoint.url }}')">
+                                    <i class="fas fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Tester -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-terminal me-2"></i>
+                    API Request Builder
+                </h6>
+            </div>
+            <div class="card-body">
+                <form id="apiTestForm">
+                    <div class="mb-3">
+                        <label for="apiMethod" class="form-label">Method</label>
+                        <select class="form-select" id="apiMethod">
+                            <option value="GET" selected>GET</option>
+                            <option value="POST">POST</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="apiEndpoint" class="form-label">Endpoint</label>
+                        <input type="text" class="form-control" id="apiEndpoint" value="/api/stats/" placeholder="/api/endpoint">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="apiParams" class="form-label">Query Parameters (JSON)</label>
+                        <textarea class="form-control" id="apiParams" rows="3" placeholder='{"brand": "Apple", "date_from": "2023-01-01"}'></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="apiHeaders" class="form-label">Headers (JSON)</label>
+                        <textarea class="form-control" id="apiHeaders" rows="2" placeholder='{"Content-Type": "application/json"}'></textarea>
+                    </div>
+                    
+                    <button type="button" class="btn btn-primary" onclick="executeApiRequest()">
+                        <i class="fas fa-paper-plane"></i> Send Request
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="clearApiForm()">
+                        <i class="fas fa-eraser"></i> Clear
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-code me-2"></i>
+                    Response
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="apiResponse" class="bg-light p-3 rounded" style="min-height: 300px; font-family: monospace; font-size: 0.9em;">
+                    <span class="text-muted">Response will appear here...</span>
+                </div>
+                
+                <div class="mt-3">
+                    <button class="btn btn-outline-primary btn-sm" onclick="formatResponse()">
+                        <i class="fas fa-code"></i> Format JSON
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="copyResponse()">
+                        <i class="fas fa-copy"></i> Copy Response
+                    </button>
+                    <button class="btn btn-outline-success btn-sm" onclick="downloadResponse()">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Examples -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Quick Examples
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Get Overall Statistics</h6>
+                        <div class="bg-light p-3 rounded mb-3">
+                            <code>GET /api/stats/</code>
+                            <button class="btn btn-sm btn-outline-primary float-end" onclick="loadExample('/api/stats/', 'GET', '')">
+                                Try It
+                            </button>
+                        </div>
+                        
+                        <h6>Brand Comparison</h6>
+                        <div class="bg-light p-3 rounded mb-3">
+                            <code>GET /api/brands/comparison/?brands=Apple&brands=Google</code>
+                            <button class="btn btn-sm btn-outline-primary float-end" onclick="loadExample('/api/brands/comparison/', 'GET', '{\"brands\": [\"Apple\", \"Google\"]}')">
+                                Try It
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Trend Analysis</h6>
+                        <div class="bg-light p-3 rounded mb-3">
+                            <code>GET /api/trends/?period=daily&brand=Apple</code>
+                            <button class="btn btn-sm btn-outline-primary float-end" onclick="loadExample('/api/trends/', 'GET', '{\"period\": \"daily\", \"brand\": \"Apple\"}')">
+                                Try It
+                            </button>
+                        </div>
+                        
+                        <h6>Crisis Detection</h6>
+                        <div class="bg-light p-3 rounded mb-3">
+                            <code>GET /api/crisis/</code>
+                            <button class="btn btn-sm btn-outline-primary float-end" onclick="loadExample('/api/crisis/', 'GET', '')">
+                                Try It
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let lastResponse = '';
+
+function testEndpoint(url, method) {
+    document.getElementById('apiEndpoint').value = url;
+    document.getElementById('apiMethod').value = method;
+    executeApiRequest();
+}
+
+function copyEndpoint(url) {
+    navigator.clipboard.writeText(window.location.origin + url).then(() => {
+        showToast('Endpoint URL copied to clipboard!');
+    });
+}
+
+function loadExample(endpoint, method, params) {
+    document.getElementById('apiEndpoint').value = endpoint;
+    document.getElementById('apiMethod').value = method;
+    document.getElementById('apiParams').value = params;
+    executeApiRequest();
+}
+
+function executeApiRequest() {
+    const method = document.getElementById('apiMethod').value;
+    const endpoint = document.getElementById('apiEndpoint').value;
+    const paramsText = document.getElementById('apiParams').value;
+    const headersText = document.getElementById('apiHeaders').value;
+    
+    // Show loading state
+    const responseDiv = document.getElementById('apiResponse');
+    responseDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Sending request...</div>';
+    
+    // Parse parameters
+    let params = {};
+    if (paramsText.trim()) {
+        try {
+            params = JSON.parse(paramsText);
+        } catch (e) {
+            responseDiv.innerHTML = '<div class="text-danger">Error: Invalid JSON in parameters</div>';
+            return;
+        }
+    }
+    
+    // Parse headers
+    let headers = {'Content-Type': 'application/json'};
+    if (headersText.trim()) {
+        try {
+            headers = {...headers, ...JSON.parse(headersText)};
+        } catch (e) {
+            responseDiv.innerHTML = '<div class="text-danger">Error: Invalid JSON in headers</div>';
+            return;
+        }
+    }
+    
+    // Build URL with query parameters for GET requests
+    let url = endpoint;
+    if (method === 'GET' && Object.keys(params).length > 0) {
+        const urlParams = new URLSearchParams();
+        for (const [key, value] of Object.entries(params)) {
+            if (Array.isArray(value)) {
+                value.forEach(v => urlParams.append(key, v));
+            } else {
+                urlParams.append(key, value);
+            }
+        }
+        url += '?' + urlParams.toString();
+    }
+    
+    // Make the request
+    const fetchOptions = {
+        method: method,
+        headers: headers
+    };
+    
+    if (method === 'POST' && Object.keys(params).length > 0) {
+        fetchOptions.body = JSON.stringify(params);
+    }
+    
+    fetch(url, fetchOptions)
+        .then(response => {
+            const statusClass = response.ok ? 'text-success' : 'text-danger';
+            const statusText = `<div class="${statusClass}">Status: ${response.status} ${response.statusText}</div>`;
+            
+            return response.json().then(data => ({
+                status: response.status,
+                statusText: response.statusText,
+                data: data
+            }));
+        })
+        .then(result => {
+            const statusClass = result.status < 400 ? 'text-success' : 'text-danger';
+            const statusInfo = `<div class="${statusClass} mb-2">Status: ${result.status} ${result.statusText}</div>`;
+            const jsonResponse = JSON.stringify(result.data, null, 2);
+            lastResponse = jsonResponse;
+            
+            responseDiv.innerHTML = statusInfo + '<pre class="mb-0">' + jsonResponse + '</pre>';
+        })
+        .catch(error => {
+            responseDiv.innerHTML = '<div class="text-danger">Error: ' + error.message + '</div>';
+        });
+}
+
+function clearApiForm() {
+    document.getElementById('apiEndpoint').value = '/api/stats/';
+    document.getElementById('apiMethod').value = 'GET';
+    document.getElementById('apiParams').value = '';
+    document.getElementById('apiHeaders').value = '';
+    document.getElementById('apiResponse').innerHTML = '<span class="text-muted">Response will appear here...</span>';
+}
+
+function formatResponse() {
+    const responseDiv = document.getElementById('apiResponse');
+    if (lastResponse) {
+        try {
+            const formatted = JSON.stringify(JSON.parse(lastResponse), null, 2);
+            responseDiv.innerHTML = '<pre class="mb-0">' + formatted + '</pre>';
+        } catch (e) {
+            showToast('Response is not valid JSON');
+        }
+    }
+}
+
+function copyResponse() {
+    if (lastResponse) {
+        navigator.clipboard.writeText(lastResponse).then(() => {
+            showToast('Response copied to clipboard!');
+        });
+    } else {
+        showToast('No response to copy');
+    }
+}
+
+function downloadResponse() {
+    if (lastResponse) {
+        const blob = new Blob([lastResponse], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'api_response.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Response downloaded!');
+    } else {
+        showToast('No response to download');
+    }
+}
+
+function showToast(message) {
+    // Simple toast notification
+    const toast = document.createElement('div');
+    toast.className = 'alert alert-success alert-dismissible fade show position-fixed';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.remove();
+        }
+    }, 3000);
+}
+
+// Load default example on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadExample('/api/stats/', 'GET', '');
+});
+</script>
+{% endblock %}

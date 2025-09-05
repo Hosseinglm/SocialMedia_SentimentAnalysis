@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+
+{% block title %}Brand Analysis - Augment Sentiment Intelligence{% endblock %}
+{% block page_title %}Brand Analysis{% endblock %}
+
+{% block content %}
+<!-- Brand Overview Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Total Brands</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ brands.count }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-building fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Top Brand</div>
+                        <div class="h6 mb-0 font-weight-bold">
+                            {% if top_brand %}{{ top_brand.name }}{% else %}N/A{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-trophy fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Top Mentions</div>
+                        <div class="h5 mb-0 font-weight-bold">
+                            {% if top_brand %}{{ top_brand.total_mentions }}{% else %}0{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-comments fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">Categories</div>
+                        <div class="h5 mb-0 font-weight-bold">
+                            {{ brands|length|add:"-1"|default:"0" }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-tags fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Brand Analysis Charts -->
+<div class="row mb-4">
+    <!-- Top Brand Sentiment -->
+    <div class="col-xl-6 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    {% if top_brand %}{{ top_brand.name }} Sentiment Breakdown{% else %}Brand Sentiment{% endif %}
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="brandSentimentChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Brand Comparison -->
+    <div class="col-xl-6 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-balance-scale me-2"></i>
+                    Brand Comparison (Top 10)
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="brandComparisonChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Brand List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-list me-2"></i>
+                    All Brands
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Brand</th>
+                                <th>Category</th>
+                                <th>Total Mentions</th>
+                                <th>Positive %</th>
+                                <th>Negative %</th>
+                                <th>Neutral %</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for brand in brands %}
+                            <tr>
+                                <td>
+                                    <span class="brand-logo">{{ brand.name|first|upper }}</span>
+                                    <strong>{{ brand.display_name|default:brand.name }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ brand.category|default:"Other" }}</span>
+                                </td>
+                                <td>{{ brand.total_mentions }}</td>
+                                <td>
+                                    {% with sentiment=brand.sentiment_distribution %}
+                                        <span class="sentiment-positive">
+                                            {{ sentiment.Positive.percentage|default:0 }}%
+                                        </span>
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    {% with sentiment=brand.sentiment_distribution %}
+                                        <span class="sentiment-negative">
+                                            {{ sentiment.Negative.percentage|default:0 }}%
+                                        </span>
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    {% with sentiment=brand.sentiment_distribution %}
+                                        <span class="sentiment-neutral">
+                                            {{ sentiment.Neutral.percentage|default:0 }}%
+                                        </span>
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" onclick="viewBrandDetails({{ brand.id }})">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No brands found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Brand Sentiment Chart
+const brandSentimentCtx = document.getElementById('brandSentimentChart').getContext('2d');
+const sentimentData = {{ sentiment_breakdown|safe }};
+
+if (sentimentData && sentimentData.length > 0) {
+    const labels = sentimentData.map(item => item.sentiment_label);
+    const data = sentimentData.map(item => item.count);
+    
+    new Chart(brandSentimentCtx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: [
+                    '#28a745', // Positive
+                    '#dc3545', // Negative
+                    '#6c757d', // Neutral
+                    '#ffc107'  // Irrelevant
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+} else {
+    brandSentimentCtx.canvas.parentNode.innerHTML = '<p class="text-center text-muted">No sentiment data available</p>';
+}
+
+// Brand Comparison Chart
+const brandComparisonCtx = document.getElementById('brandComparisonChart').getContext('2d');
+
+// Sample data for brand comparison
+const brandNames = [{% for brand in brands|slice:":10" %}'{{ brand.name }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+const brandMentions = [{% for brand in brands|slice:":10" %}{{ brand.total_mentions }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+new Chart(brandComparisonCtx, {
+    type: 'bar',
+    data: {
+        labels: brandNames,
+        datasets: [{
+            label: 'Total Mentions',
+            data: brandMentions,
+            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+            borderColor: 'rgba(102, 126, 234, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+function viewBrandDetails(brandId) {
+    // Fetch brand details via AJAX
+    fetch(`/dashboard/brand/${brandId}/data/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+            } else {
+                // Show brand details in modal or redirect
+                alert(`Brand: ${data.brand.name}\nTotal Mentions: ${data.brand.total_mentions}\nSentiment breakdown available in console`);
+                console.log('Brand Details:', data);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error fetching brand details');
+        });
+}
+</script>
+{% endblock %}
